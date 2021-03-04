@@ -26,6 +26,9 @@ class JIRA_CLIENT:
             }
         }
         resp = self.http_client.post(f"{self.domain}/rest/api/2/issue/", json=data, auth=(self.user_email, self.token))
+        if resp.status_code != 201:
+            raise AssertionError(resp.text)
+        print("create issue")
         return resp.json()
     
     def get_ticket_platform(self):
@@ -45,14 +48,19 @@ class JIRA_CLIENT:
 
     def get_issue_by_id(self, issue_id):
         resp = self.http_client.get(f"{self.domain}/rest/api/3/issue/{issue_id}", auth=(self.user_email, self.token))
+        if resp.status_code != 200:
+            assert AssertionError(resp.text)
+        print("get issue")
         return resp.json()
     
-    def update_issue(self, payload: dict):
+    def update_issue(self, issue_id: int, payload: dict):
         data = {
             "fields": {
                 "summary": payload['summary'],
-                "description": payload['description']
             }
         }
-        resp = self.http_client.put(f"{self.domain}/rest/api/3/issue/", json=data, auth=(self.user_email, self.token))
+        resp = self.http_client.put(f"{self.domain}/rest/api/2/issue/{issue_id}", json=data, auth=(self.user_email, self.token))
+        if resp.status_code != 200:
+            assert AssertionError(resp.text)
+        print("update issue")
         return resp.json()

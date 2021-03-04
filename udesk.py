@@ -19,15 +19,19 @@ class UDESK_TICKET:
         url = self._get_api_url(f"tickets/detail") + f"&id={id}"
         resp = requests.get(url)
         ticket = resp.json()
+        if ticket['code'] != 1000:
+            raise AssertionError(f"更新工单失败：{ticket}")
         return ticket['ticket']
 
-    def update_ticket(self, id: str, payload: dict):
-        url = self._get_api_url(f"tickets/{id}")
-        if payload.get("ticket_id"):
+    def update_ticket(self, ticket_id: str, payload: dict):
+        url = self._get_api_url(f"tickets/{ticket_id}")
+        if payload.get("issue_id"):
             # TODO：更新自定义字段
             data = {
                 "ticket":{
-                    ""
+                    "custom_fields": {
+                        "TextField_206751": payload.get("issue_id")
+                    }
                 }
             }
         else:
@@ -39,6 +43,9 @@ class UDESK_TICKET:
             }
         resp = requests.put(url, json=data)
         ticket = resp.json()
+        if ticket['code'] != 1000:
+            raise AssertionError(f"更新工单失败：{ticket}")
+        print("更新工单完成")
         return ticket['ticket']
 
     def _get_api_url(self, api: str) -> str:
