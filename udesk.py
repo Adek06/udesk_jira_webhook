@@ -38,7 +38,7 @@ class UDESK_TICKET:
             data = {
                 "ticket": {
                     "subject": payload['subject'],
-                    "content": payload['content']
+                    "content": payload.get('content')
                 }
             }
         resp = requests.put(url, json=data)

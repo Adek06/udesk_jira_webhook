@@ -60,7 +60,6 @@ class JIRA_CLIENT:
             }
         }
         resp = self.http_client.put(f"{self.domain}/rest/api/2/issue/{issue_id}", json=data, auth=(self.user_email, self.token))
-        if resp.status_code != 200:
+        if resp.status_code != 204:
             assert AssertionError(resp.text)
-        print("update issue")
-        return resp.json()
+        return 

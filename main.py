@@ -21,10 +21,11 @@ def jira_issue(issue_id: str):
     else:
         payload = {
             "subject": data['fields']['summary'],
-            "content": data['fields']['description']['content']['content']['text']
+            #"content": content.get('text')
         }
     try:
-        u.update_ticket(payload)
+        ticket_id = j.get_ticket_id(data)
+        u.update_ticket(ticket_id, payload)
     except AssertionError as err:
         print(err)
         return
