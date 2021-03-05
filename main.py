@@ -8,7 +8,7 @@ app = Flask(__name__)
 def ping():
     return 'pong'
 
-@app.route('/webhook/jira/issue/<int:issue_id>')
+@app.route('/webhook/jira/issue/<int:issue_id>', methods=['POST'])
 def jira_issue(issue_id: str): 
     j = JIRA_CLIENT()
     data = j.get_issue_by_id(issue_id)
@@ -80,4 +80,4 @@ def udesk_ticket():
     return ''
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000)
