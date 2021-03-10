@@ -63,3 +63,7 @@ class JIRA_CLIENT:
         if resp.status_code != 204:
             assert AssertionError(resp.text)
         return 
+if __name__ == "__main__":
+    issue_id = 'FIX-48'
+    j = JIRA_CLIENT()
+    print(j.get_issue_by_id(issue_id)['fields']['summary'])

@@ -1,6 +1,7 @@
 from flask import Flask, request
 from jira import JIRA_CLIENT
 from udesk import UDESK_TICKET
+from k5f import YiChuang
 
 app = Flask(__name__)
 
@@ -30,6 +31,56 @@ def jira_issue(issue_id: str):
         print(err)
         return
     return data
+
+@app.route('/webhook/yichuang/ticket')
+def yichuang_webhook():
+    """
+    yichuang -> jira
+    """
+    params    = request.args
+    ticket_id = params['ticketID']
+
+    y = YiChuang()
+    try: 
+        ticket = y.get_ticket(ticket_id)
+        if ticket['group_id'] != YiChuang.L3_GROUP_ID:
+            return ''
+    except AssertionError as err:
+        print(err)
+        return ''
+
+    summary     = ticket['title']
+    description = ticket['description'] 
+    issue_id    = [i for i in ticket['custom_fields'] if i['name'] == YiChuang.JIRA_ISSUE_FILED_ID][0]['value']
+
+    j = JIRA_CLIENT()
+    if issue_id:
+        try:
+            jira_issue = j.get_issue_by_id(issue_id)
+            if jira_issue['fields']['summary'] == summary:
+                return
+            j.update_issue(issue_id, {
+                "summary": summary,
+                "description": description
+            })
+        except AssertionError as err:
+            print(err)
+            return
+    else:
+        try:
+            t = j.create_issue(request.json)
+        except AssertionError as err:
+            print(err)
+            return ''
+            
+        issue_id = t.get("id")
+        try:
+            y.update_ticket(ticket_id, {"issue_id": issue_id})
+        except AssertionError as err:
+            print(err)
+            return ''
+    return ''
+
 
 @app.route('/webhook/udesk/ticket', methods=['POST'])
 def udesk_ticket():
@@ -80,4 +131,4 @@ def udesk_ticket():
     return ''
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=4567)
